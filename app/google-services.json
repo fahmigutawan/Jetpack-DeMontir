@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "801214823090",
+    "project_id": "de-montir",
+    "storage_bucket": "de-montir.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:801214823090:android:966b583a60afcc4484e7ab",
+        "android_client_info": {
+          "package_name": "com.ionix.demontir"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "801214823090-dcb01u7ds37o9ghg70amb7son9n19ttl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAT8Vxh_RglfUnmP_SF1Tvi9-toDyLv7kY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "801214823090-dcb01u7ds37o9ghg70amb7son9n19ttl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
