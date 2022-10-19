@@ -1,17 +1,14 @@
 package com.ionix.demontir.screen
 
 import android.annotation.SuppressLint
-import android.graphics.BitmapFactory
+import android.content.Intent
+import android.net.Uri
 import android.preference.PreferenceManager
-import android.util.Log
+import android.provider.Settings
 import android.view.LayoutInflater
-import androidx.activity.ComponentActivity
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTransformGestures
-import androidx.compose.foundation.gestures.rememberTransformableState
-import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
@@ -23,41 +20,35 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.PermissionStatus
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.shouldShowRationale
 import com.ionix.demontir.R
-import com.ionix.demontir.component.AppClickableInputField
-import com.ionix.demontir.component.AppTextInputField
-import com.ionix.demontir.component.HomeBengkelBottomSheet
-import com.ionix.demontir.mainViewModel
+import com.ionix.demontir.component.*
 import com.ionix.demontir.ui.theme.BluePrussian
 import com.ionix.demontir.ui.theme.BlueQueen
 import com.ionix.demontir.util.ListenAppBackHandler
-import com.ionix.demontir.util.MapperDomainToPresenter
-import com.ionix.demontir.util.MapperResponseToDomain
 import com.ionix.demontir.util.Resource
 import com.ionix.demontir.viewmodel.HomeViewModel
 import com.ionix.demontir.viewmodel.MainViewModel
-import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.osmdroid.config.Configuration
-import org.osmdroid.events.DelayedMapListener
-import org.osmdroid.events.MapListener
-import org.osmdroid.events.ScrollEvent
-import org.osmdroid.events.ZoomEvent
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
@@ -88,6 +79,13 @@ fun HomeScreen(navController: NavController, mainViewModel: MainViewModel) {
         } else {
             if (navController.backQueue.size == 2) System.exit(0)
             else navController.popBackStack()
+        }
+    }
+    if(viewModel.shouldGetPictures.value
+        || viewModel.shouldGetProducts.value)
+    {
+        LaunchedEffect(key1 = true){
+            viewModel.resetBottomSheetCondition.value = true
         }
     }
 
@@ -161,7 +159,7 @@ private fun HomeScreenContentDashboard(viewModel: HomeViewModel, mainViewModel: 
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalPermissionsApi::class)
 @SuppressLint("InflateParams", "UseCompatLoadingForDrawables")
 @Composable
 private fun HomeScreenContentMap(
@@ -171,15 +169,100 @@ private fun HomeScreenContentMap(
 ) {
     /**Attrs*/
     val context = LocalContext.current
-    val location = viewModel.locationData.observeAsState()
+//    val location = viewModel.locationData.observeAsState()
     val nearestBengkel = viewModel.nearestBengkel.collectAsState()
     val bottomSheetScaffoldState =
         rememberBottomSheetScaffoldState(bottomSheetState = bottomSheetState)
     val coroutineScope = rememberCoroutineScope()
     val polyline = Polyline()
+    val locationPermission =
+        rememberPermissionState(permission = android.Manifest.permission.ACCESS_FINE_LOCATION)
+    val appSettingIntent = Intent(
+        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+        Uri.parse("package:" + context.getPackageName())
+    )
 
     /**Function*/
+    LaunchedEffect(key1 = true) {
+        viewModel.getNearestBengkel(112.609, -7.959)
+    }
     polyline.setPoints(viewModel.polylinesGeopoint)
+    if (viewModel.showLocationPermissionDeniedRationale.value) {
+        AlertDialog(
+            onDismissRequest = { /*TODO*/ },
+            buttons = {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Pastikan anda telah mengizinkan akses lokasi pada aplikasi De Montir",
+                        textAlign = TextAlign.Center
+                    )
+                    AppButtonField(
+                        onClick = { locationPermission.launchPermissionRequest() }
+                    ) {
+                        Text(text = "Izinkan", color = Color.White)
+                    }
+                }
+            },
+            properties = DialogProperties(
+                dismissOnBackPress = false,
+                dismissOnClickOutside = false
+            )
+        )
+    }
+    if (viewModel.showLocationPermissionDeniedNotRationale.value) {
+        AlertDialog(
+            onDismissRequest = { /*TODO*/ },
+            buttons = {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Sepertinya sengaja/tidak sengaja, anda telah menolak permintaan izin lokasi. " +
+                                "\nUntuk melanjutkan, anda harus mengizinkan akses lokasi secara manual di pengaturan",
+                        textAlign = TextAlign.Center
+                    )
+                    AppButtonField(
+                        onClick = {
+                            context.startActivity(appSettingIntent)
+                        }) {
+                        Text(text = "Buka Pengaturan", color = Color.White)
+                    }
+                }
+
+            },
+            properties = DialogProperties(
+                dismissOnBackPress = false,
+                dismissOnClickOutside = false
+            )
+        )
+    }
+    if (viewModel.showImageViewer.value) {
+        AppImageViewerDialog(
+            onDissmissRequest = { viewModel.showImageViewer.value = false },
+            url = viewModel.tmpUrlImageViewer.value
+        )
+    }
+    when (locationPermission.status) {
+        is PermissionStatus.Denied -> {
+            if (locationPermission.status.shouldShowRationale) {
+                viewModel.showLocationPermissionDeniedNotRationale.value = false
+                viewModel.showLocationPermissionDeniedRationale.value = true
+            } else {
+                viewModel.showLocationPermissionDeniedRationale.value = false
+                viewModel.showLocationPermissionDeniedNotRationale.value = true
+            }
+        }
+        PermissionStatus.Granted -> {
+            viewModel.showLocationPermissionDeniedRationale.value = false
+            viewModel.showLocationPermissionDeniedNotRationale.value = false
+        }
+    }
     when (nearestBengkel.value) {
         is Resource.Error -> {
             /*TODO*/
@@ -224,6 +307,7 @@ private fun HomeScreenContentMap(
 
                             if (tmp != viewModel.currentBengkelSelected.value) {
                                 viewModel.shouldGetPictures.value = true
+                                viewModel.shouldGetProducts.value = true
                             }
                         }
                     }
@@ -245,6 +329,7 @@ private fun HomeScreenContentMap(
 
                             if (tmp != viewModel.currentBengkelSelected.value) {
                                 viewModel.shouldGetPictures.value = true
+                                viewModel.shouldGetProducts.value = true
                             }
                         }
                     }
@@ -261,34 +346,34 @@ private fun HomeScreenContentMap(
     Configuration.getInstance().load(
         context, PreferenceManager.getDefaultSharedPreferences(context)
     )
-    if (viewModel.longitudeState.value == null && viewModel.latitudeState.value == null) {
-        viewModel.longitudeState.value = location.value?.longitude
-        viewModel.latitudeState.value = location.value?.latitude
-    } else {
-        location.value?.let { recentLocation ->
-            viewModel.longitudeState.value?.let { longState ->
-                val longitudeChanges = Math.abs((recentLocation.longitude - longState))
-
-                if (longitudeChanges >= 30) {
-                    //Call Update for Nearest Bengkel
-                    viewModel.longitudeState.value = recentLocation.longitude
-                }
-            }
-
-            viewModel.latitudeState.value?.let { latState ->
-                val latitudeChanges = Math.abs((recentLocation.latitude - latState))
-
-                if (latitudeChanges >= 30) {
-                    //Call Update for Nearest Bengkel
-                    viewModel.latitudeState.value = recentLocation.latitude
-                }
-            }
-
-            LaunchedEffect(key1 = true) {
-                viewModel.getNearestBengkel(recentLocation.longitude, recentLocation.latitude)
-            }
-        }
-    }
+//    if (viewModel.longitudeState.value == null && viewModel.latitudeState.value == null) {
+//        viewModel.longitudeState.value = location.value?.longitude
+//        viewModel.latitudeState.value = location.value?.latitude
+//    } else {
+//        location.value?.let { recentLocation ->
+//            viewModel.longitudeState.value?.let { longState ->
+//                val longitudeChanges = Math.abs((recentLocation.longitude - longState))
+//
+//                if (longitudeChanges >= 30) {
+//                    //Call Update for Nearest Bengkel
+//                    viewModel.longitudeState.value = recentLocation.longitude
+//                }
+//            }
+//
+//            viewModel.latitudeState.value?.let { latState ->
+//                val latitudeChanges = Math.abs((recentLocation.latitude - latState))
+//
+//                if (latitudeChanges >= 30) {
+//                    //Call Update for Nearest Bengkel
+//                    viewModel.latitudeState.value = recentLocation.latitude
+//                }
+//            }
+//
+//            LaunchedEffect(key1 = true) {
+//                viewModel.getNearestBengkel(recentLocation.longitude, recentLocation.latitude)
+//            }
+//        }
+//    }
 
     /**Content*/
     AnimatedVisibility(visible = !mainViewModel.showDashboardItem.value) {
@@ -296,7 +381,13 @@ private fun HomeScreenContentMap(
             sheetContent = {
                 HomeBengkelBottomSheet(
                     homeViewModel = viewModel,
-                    shouldGetPictures = viewModel.shouldGetPictures
+                    shouldGetPictures = viewModel.shouldGetPictures,
+                    shouldGetProducts = viewModel.shouldGetProducts,
+                    shouldResetCondition = viewModel.resetBottomSheetCondition,
+                    onPictureClicked = { url ->
+                        viewModel.tmpUrlImageViewer.value = url
+                        viewModel.showImageViewer.value = true
+                    }
                 )
             }, sheetPeekHeight = 0.dp, scaffoldState = bottomSheetScaffoldState
         ) {

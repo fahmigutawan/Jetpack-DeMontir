@@ -96,4 +96,8 @@ class AppRepository @Inject constructor(
     // GET bengkel pictures by bengkel_id
     fun getBengkelPicturesByBengkelId(bengkel_id: String) =
         firebaseDataSource.getBengkelPicturesByBengkelId(bengkel_id)
+
+    // GET bengkel products by bengkel id
+    fun getBengkelProductsByBengkelId(bengkel_id: String) =
+        firebaseDataSource.getBengkelProductsByBengkelId(bengkel_id)
 }
