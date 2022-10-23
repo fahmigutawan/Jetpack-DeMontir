@@ -81,10 +81,10 @@ fun HomeScreen(navController: NavController, mainViewModel: MainViewModel) {
             else navController.popBackStack()
         }
     }
-    if(viewModel.shouldGetPictures.value
-        || viewModel.shouldGetProducts.value)
-    {
-        LaunchedEffect(key1 = true){
+    if (viewModel.shouldGetPictures.value
+        || viewModel.shouldGetProducts.value
+    ) {
+        LaunchedEffect(key1 = true) {
             viewModel.resetBottomSheetCondition.value = true
         }
     }
@@ -102,11 +102,15 @@ fun HomeScreen(navController: NavController, mainViewModel: MainViewModel) {
         )
     }
     HomeScreenContent(
-        viewModel = viewModel, searchField = {
+        viewModel = viewModel,
+        searchField = {
             HomeScreenContentSearchField(
                 viewModel = viewModel, mainViewModel = mainViewModel
             )
-        }, mainViewModel = mainViewModel, bottomSheetState = bottomSheetState
+        },
+        mainViewModel = mainViewModel,
+        bottomSheetState = bottomSheetState,
+        navController = navController
     )
 }
 
@@ -116,10 +120,14 @@ private fun HomeScreenContent(
     searchField: @Composable () -> Unit,
     viewModel: HomeViewModel,
     mainViewModel: MainViewModel,
-    bottomSheetState: BottomSheetState
+    bottomSheetState: BottomSheetState,
+    navController: NavController
 ) {
     HomeScreenContentMap(
-        viewModel = viewModel, mainViewModel = mainViewModel, bottomSheetState = bottomSheetState
+        viewModel = viewModel,
+        mainViewModel = mainViewModel,
+        bottomSheetState = bottomSheetState,
+        navController = navController
     )
 
     Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
@@ -163,6 +171,7 @@ private fun HomeScreenContentDashboard(viewModel: HomeViewModel, mainViewModel: 
 @SuppressLint("InflateParams", "UseCompatLoadingForDrawables")
 @Composable
 private fun HomeScreenContentMap(
+    navController: NavController,
     viewModel: HomeViewModel,
     mainViewModel: MainViewModel,
     bottomSheetState: BottomSheetState
@@ -299,7 +308,7 @@ private fun HomeScreenContentMap(
                         bottomSheetState.expand()
                     }
 
-                    nearestBengkel.value.data!!.let {
+                    nearestBengkel.value.data?.let {
                         if (index < it.size) {
                             val tmp = viewModel.currentBengkelSelected.value
 
@@ -316,7 +325,7 @@ private fun HomeScreenContentMap(
                         bottomSheetState.collapse()
                     }
 
-                    nearestBengkel.value.data!!.let {
+                    nearestBengkel.value.data?.let {
                         if (index < it.size) {
                             coroutineScope.launch {
                                 delay(500)
@@ -387,7 +396,8 @@ private fun HomeScreenContentMap(
                     onPictureClicked = { url ->
                         viewModel.tmpUrlImageViewer.value = url
                         viewModel.showImageViewer.value = true
-                    }
+                    },
+                    navController = navController
                 )
             }, sheetPeekHeight = 0.dp, scaffoldState = bottomSheetScaffoldState
         ) {

@@ -1,5 +1,6 @@
 package com.ionix.demontir.component
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,15 +14,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.ionix.demontir.ui.theme.BluePowder
 import com.ionix.demontir.ui.theme.MistyRose
 
 @Composable
 fun AppSnackbar(
-    modifier: Modifier = Modifier.padding(32.dp),
+    modifier: Modifier = Modifier.padding(16.dp),
     hostState: SnackbarHostState,
     actionOnNewLine: Boolean = false,
     shape: Shape = RoundedCornerShape(8.dp),
-    backgroundColor: Color = MistyRose,
+    backgroundColor: Color = BluePowder,
     elevation: Dp = 4.dp
 ) {
     SnackbarHost(hostState = hostState) {
@@ -30,22 +32,19 @@ fun AppSnackbar(
             actionOnNewLine = actionOnNewLine,
             shape = shape,
             backgroundColor = backgroundColor,
-            elevation = elevation
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(text = it.message)
-                it.actionLabel?.let { label ->
-                    TextButton(onClick = { it.performAction() }) {
-                        Text(text = label)
-                    }
-                }
+            elevation = elevation,
+            contentColor = Color.Black,
+            action = {
+                Text(
+                    text = "Tutup",
+                    modifier = Modifier
+                        .clickable { it.performAction() }
+                        .padding(end = 8.dp),
+                    color = Color.Red
+                )
             }
+        ) {
+            Text(text = it.message)
         }
     }
 }

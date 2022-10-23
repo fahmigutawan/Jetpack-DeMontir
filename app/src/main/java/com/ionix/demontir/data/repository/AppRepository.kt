@@ -6,6 +6,9 @@ import androidx.activity.result.IntentSenderRequest
 import com.google.firebase.auth.AuthCredential
 import com.ionix.demontir.data.datastore.DatastoreDataSource
 import com.ionix.demontir.data.firebase.FirebaseDataSource
+import com.ionix.demontir.model.api.request.CreateOrderProductRequest
+import com.ionix.demontir.model.api.request.OrderProductRequest
+import com.ionix.demontir.model.api.request.UserInfoRequest
 import com.ionix.demontir.model.api.response.BengkelResponse
 import com.ionix.demontir.util.Resource
 import kotlinx.coroutines.flow.Flow
@@ -39,6 +42,9 @@ class AppRepository @Inject constructor(
 
     // Logout
     fun logout() = firebaseDataSource.logout()
+
+    // GET Uid
+    fun getCurrentUid() = firebaseDataSource.getCurrentUid()
 
     // SET State about Entering App First Time
     suspend fun saveIsEnteringAppFirstTime() = datastoreDataSource.saveIsEnteringAppFirstTime()
@@ -100,4 +106,29 @@ class AppRepository @Inject constructor(
     // GET bengkel products by bengkel id
     fun getBengkelProductsByBengkelId(bengkel_id: String) =
         firebaseDataSource.getBengkelProductsByBengkelId(bengkel_id)
+
+    // GET bengkel products by bengkel id with limit
+    fun getBengkelProductsByBengkelId(bengkel_id: String, limit: Long) =
+        firebaseDataSource.getBengkelProductsByBengkelId(bengkel_id, limit)
+
+    // SAVE user ingo into database
+    fun saveUserInfo(onSuccess: () -> Unit, onFailed: () -> Unit) =
+        firebaseDataSource.saveUserInfo(onSuccess, onFailed)
+
+    // CREATE new order
+    fun createNewOrder(
+        total_price: String,
+        user_long: String,
+        user_lat: String,
+        onSuccess: (String) -> Unit,
+        onFailed: () -> Unit,
+        listOfProduct: List<OrderProductRequest>
+    ) = firebaseDataSource.createNewOrder(
+        total_price,
+        user_long,
+        user_lat,
+        onSuccess,
+        onFailed,
+        listOfProduct
+    )
 }

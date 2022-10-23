@@ -18,6 +18,7 @@ class LoginViewModel @Inject constructor(private val repository: AppRepository) 
     val passwordState = mutableStateOf("")
     val showPassword = mutableStateOf(false)
     val isFirstTimeEnteringApp = mutableStateOf<Boolean?>(null)
+    val showErrorSnackbar = mutableStateOf(false)
     val errorMessage = mutableStateOf("")
 
     fun loginWithGoogle(launcher: ActivityResultLauncher<IntentSenderRequest>) {
@@ -40,6 +41,9 @@ class LoginViewModel @Inject constructor(private val repository: AppRepository) 
             }
         }
     }
+
+    fun saveUserInfoToFirestore(onSuccess: () -> Unit, onFailed: () -> Unit) =
+        repository.saveUserInfo(onSuccess, onFailed)
 
     init {
         getFirstTimeEnteringAppState()

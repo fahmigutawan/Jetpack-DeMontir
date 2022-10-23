@@ -43,6 +43,7 @@ import com.ionix.demontir.R
 import com.ionix.demontir.component.AppButtonField
 import com.ionix.demontir.component.AppTextInputField
 import com.ionix.demontir.navigation.MainNavigation
+import com.ionix.demontir.snackbarListener
 import com.ionix.demontir.ui.theme.BluePrussian
 import com.ionix.demontir.ui.theme.BlueQueen
 import com.ionix.demontir.viewmodel.LoginViewModel
@@ -57,21 +58,30 @@ fun LoginScreen(navController: NavController) {
     val iconSize = LocalConfiguration.current.screenHeightDp / 6
 
     /**Function*/
+    snackbarListener("Login gagal, coba lagi nanti", viewModel.showErrorSnackbar)
     val launcher = googleLoginLauncher(
         context = context,
         viewModel = viewModel,
         onSuccess = {
             viewModel.isFirstTimeEnteringApp.value?.let { firstTime ->
-                if (firstTime) {
-                    // Navigate to Onboard
-                    navController.navigate(route = MainNavigation.OnboardScreen.name)
-                } else {
-                    // Navigate to Home
-                    navController.navigate(route = MainNavigation.HomeScreen.name)
-                }
+                /*TODO Save user info to database*/
+                viewModel.saveUserInfoToFirestore(
+                    onSuccess = {
+                        if (firstTime) {
+                            // Navigate to Onboard
+                            navController.navigate(route = MainNavigation.OnboardScreen.name)
+                        } else {
+                            // Navigate to Home
+                            navController.navigate(route = MainNavigation.HomeScreen.name)
+                        }
+                    },
+                    onFailed = {
+//                        viewModel.showErrorSnackbar.value = true
+                    }
+                )
             }
         },
-        onFailed = {}
+        onFailed = { viewModel.showErrorSnackbar.value = true }
     )
 
     /**Content*/
@@ -274,6 +284,7 @@ private fun LoginContentField(
             horizontalArrangement = Arrangement.Center
         ) {
             Icon(
+                modifier = Modifier.size(42.dp),
                 painter = painterResource(id = R.drawable.ic_google),
                 contentDescription = "Google",
                 tint = Color.Unspecified

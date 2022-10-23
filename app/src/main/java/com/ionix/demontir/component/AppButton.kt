@@ -46,7 +46,7 @@ fun AppButtonField(
     val contentWidth = remember { mutableStateOf(0.dp) }
     val localDensity = LocalDensity.current
 
-    Box{
+    Box(contentAlignment = Alignment.Center){
         Box(
             modifier = modifier
                 .clip(shape)
@@ -69,7 +69,7 @@ fun AppButtonField(
             content()
         }
 
-        Box(modifier = Modifier.clip(shape)
+        Box(modifier = modifier.clip(shape)
             .size(width = contentWidth.value, height = contentHeight.value)
             .clickable(
                 enabled = enabled,

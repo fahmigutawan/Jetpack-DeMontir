@@ -6,6 +6,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.ktx.toObject
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
@@ -20,7 +21,7 @@ class GetResponse @Inject constructor(
         crossinline block: suspend () -> Task<DocumentSnapshot>
     ): Flow<Resource<Y>?> = flow {
         emit(Resource.Loading())
-
+        delay(2500)
         if (!connectivityCheck.isConnectedToInternet()) {
             emit(Resource.Error("Check your Connection"))
             return@flow
@@ -40,7 +41,7 @@ class GetResponse @Inject constructor(
         crossinline block: suspend () -> Task<QuerySnapshot>
     ): Flow<Resource<List<Y>>?> = flow {
         emit(Resource.Loading())
-
+        delay(2500)
         if (!connectivityCheck.isConnectedToInternet()) {
             emit(Resource.Error("Check your Connection"))
             return@flow

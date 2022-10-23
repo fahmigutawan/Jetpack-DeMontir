@@ -11,9 +11,11 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.ScaffoldState
-import androidx.compose.material.Surface
-import androidx.compose.material.rememberScaffoldState
+import androidx.compose.material.*
+import androidx.compose.material.SnackbarResult.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -25,8 +27,9 @@ import com.ionix.demontir.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.HiltAndroidApp
 
-lateinit var mainViewModel:MainViewModel
-lateinit var scaffoldState:ScaffoldState
+lateinit var mainViewModel: MainViewModel
+lateinit var scaffoldState: ScaffoldState
+lateinit var snackbarListener: @Composable (text: String, state: MutableState<Boolean>) -> Unit
 
 @AndroidEntryPoint
 class MyActivity : ComponentActivity() {
@@ -37,6 +40,24 @@ class MyActivity : ComponentActivity() {
             /**Attrs*/
             mainViewModel = hiltViewModel()
             scaffoldState = rememberScaffoldState()
+            snackbarListener = { text, state ->
+                if (state.value) {
+                    LaunchedEffect(key1 = true) {
+                        val snackbarHost = scaffoldState.snackbarHostState
+
+                        val result = snackbarHost.showSnackbar(
+                            message = text,
+                            duration = SnackbarDuration.Short,
+                            actionLabel = "Tutup"
+                        )
+
+                        when(result){
+                            Dismissed -> state.value = false
+                            ActionPerformed -> state.value = false
+                        }
+                    }
+                }
+            }
 
             /**Function*/
 

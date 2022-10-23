@@ -67,7 +67,7 @@ class HomeViewModel @Inject constructor(
 
     fun getBengkelProductsByBengkelId(bengkel_id:String){
         viewModelScope.launch {
-            repository.getBengkelProductsByBengkelId(bengkel_id).collect{
+            repository.getBengkelProductsByBengkelId(bengkel_id = bengkel_id, limit = 10).collect{
                 it?.let {
                     _bengkelProducts.value = it
                 }

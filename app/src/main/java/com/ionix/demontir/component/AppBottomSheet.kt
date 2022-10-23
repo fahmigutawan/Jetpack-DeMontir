@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
@@ -34,6 +35,7 @@ import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
 import com.ionix.demontir.component.helper.DummyReviewItem
+import com.ionix.demontir.navigation.BranchNavigation
 import com.ionix.demontir.ui.theme.BluePowder
 import com.ionix.demontir.ui.theme.BluePrussian
 import com.ionix.demontir.ui.theme.GreenCeleste
@@ -48,7 +50,8 @@ fun HomeBengkelBottomSheet(
     shouldGetPictures: MutableState<Boolean>,
     shouldGetProducts: MutableState<Boolean>,
     shouldResetCondition: MutableState<Boolean>,
-    onPictureClicked: (String) -> Unit
+    onPictureClicked: (String) -> Unit,
+    navController: NavController
 ) {
     homeViewModel.currentBengkelSelected.value?.let { bengkel ->
         val bengkelPictures = homeViewModel.bengkelPictures.collectAsState()
@@ -85,7 +88,7 @@ fun HomeBengkelBottomSheet(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                    .padding(start = 16.dp, end = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 item {
@@ -141,7 +144,7 @@ fun HomeBengkelBottomSheet(
                     }
                 }
 
-                // Button
+                // Buttons
                 item {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -166,7 +169,7 @@ fun HomeBengkelBottomSheet(
                         }
 
                         AppButtonField(
-                            onClick = { /*TODO*/ },
+                            onClick = { navController.navigate(route = "${BranchNavigation.OrderScreen.name}/${bengkel.bengkel_id ?: ""}") },
                             backgroundColor = Color.White,
                             rippleColor = Color.Black
                         ) {

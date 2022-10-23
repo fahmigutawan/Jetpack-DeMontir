@@ -1,16 +1,18 @@
 package com.ionix.demontir
 
+import android.os.Bundle
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavHostController
+import androidx.navigation.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.ionix.demontir.component.AppBottomBar
 import com.ionix.demontir.component.AppSnackbar
+import com.ionix.demontir.navigation.BranchNavigation
 import com.ionix.demontir.navigation.MainNavigation
 import com.ionix.demontir.screen.*
 
@@ -18,6 +20,11 @@ import com.ionix.demontir.screen.*
 fun AppContent() {
     /**Attrs*/
     val navController = rememberNavController()
+
+    /**Function*/
+    navController.addOnDestinationChangedListener { controller, destination, arguments ->
+        mainViewModel.bottomBarState.value = destination.route ?: ""
+    }
 
     /**Content*/
     Scaffold(
@@ -48,42 +55,54 @@ private fun AppNavigation(navController: NavHostController, modifier: Modifier =
     ) {
         /*Main Screen*/
         composable(route = MainNavigation.SplashScreen.name) {
-            mainViewModel.bottomBarState.value = MainNavigation.SplashScreen.name
             AppSplashScreen(navController = navController)
         }
 
-        composable(route = MainNavigation.LoginScreen.name){
-            mainViewModel.bottomBarState.value = MainNavigation.LoginScreen.name
+        composable(route = MainNavigation.LoginScreen.name) {
             LoginScreen(navController = navController)
         }
 
-        composable(route = MainNavigation.RegisterScreen.name){
-            mainViewModel.bottomBarState.value = MainNavigation.RegisterScreen.name
+        composable(route = MainNavigation.RegisterScreen.name) {
             RegisterScreen(navController = navController)
         }
 
-        composable(route = MainNavigation.OnboardScreen.name){
-            mainViewModel.bottomBarState.value = MainNavigation.OnboardScreen.name
+        composable(route = MainNavigation.OnboardScreen.name) {
             OnboardScreen(navController = navController)
         }
 
         composable(route = MainNavigation.HomeScreen.name) {
-            mainViewModel.bottomBarState.value = MainNavigation.HomeScreen.name
             HomeScreen(navController = navController, mainViewModel = mainViewModel)
         }
 
         composable(route = MainNavigation.ChatScreen.name) {
-            mainViewModel.bottomBarState.value = MainNavigation.ChatScreen.name
+        }
+
+        composable(route = "${MainNavigation.ChatScreen.name}/{uid_1}/{uid_2}") {
+        }
+
+        composable(route = "${MainNavigation.ChatScreen.name}/{uid_1}/{uid_2}/{order_id}") {
         }
 
         composable(route = MainNavigation.HistoryScreen.name) {
-            mainViewModel.bottomBarState.value = MainNavigation.HistoryScreen.name
         }
 
         composable(route = MainNavigation.ProfileScreen.name) {
-            mainViewModel.bottomBarState.value = MainNavigation.ProfileScreen.name
+            ProfileScreen(navController = navController)
         }
 
         /*Branch Screen*/
+        composable(
+            route = "${BranchNavigation.OrderScreen.name}/{bengkel_id}",
+            arguments = listOf(
+                navArgument("bengkel_id") { type = NavType.StringType }
+            )
+        ) {
+            val bengkel_id = it.arguments?.getString("bengkel_id")
+
+            BengkelProductScreen(
+                navController = navController,
+                bengkel_id = bengkel_id ?: ""
+            )
+        }
     }
 }
