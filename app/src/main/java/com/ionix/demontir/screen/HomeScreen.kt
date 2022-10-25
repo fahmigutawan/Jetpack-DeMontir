@@ -11,6 +11,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
@@ -24,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
@@ -34,10 +36,14 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.placeholder
+import com.google.accompanist.placeholder.shimmer
 import com.ionix.demontir.R
 import com.ionix.demontir.component.*
 import com.ionix.demontir.ui.theme.BluePrussian
@@ -98,8 +104,15 @@ fun HomeScreen(navController: NavController, mainViewModel: MainViewModel) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(brush = Brush.verticalGradient(listOf(BluePrussian, BlueQueen)))
-        )
+                .background(brush = Brush.verticalGradient(listOf(BluePrussian, BlueQueen))),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            AsyncImage(
+                contentScale = ContentScale.FillWidth,
+                model = R.drawable.ic_home_img,
+                contentDescription = "Img"
+            )
+        }
     }
     HomeScreenContent(
         viewModel = viewModel,
@@ -138,8 +151,10 @@ private fun HomeScreenContent(
 
 @Composable
 private fun HomeScreenContentDashboard(viewModel: HomeViewModel, mainViewModel: MainViewModel) {
+    val userInfo = viewModel.userInfo.collectAsState()
+
     AnimatedVisibility(
-        visible = mainViewModel.showDashboardItem.value,
+        visible = mainViewModel.showDashboardItem.value
     ) {
         LazyColumn {
             /*Spacer*/
@@ -158,10 +173,40 @@ private fun HomeScreenContentDashboard(viewModel: HomeViewModel, mainViewModel: 
             }
 
             /*Name*/
-            item {
-                Text(
-                    modifier = Modifier, text = "Halo, Fahmi", color = Color.White, fontSize = 32.sp
-                )
+            when (userInfo.value) {
+                is Resource.Error -> {
+                    item {
+                        Text(
+                            modifier = Modifier,
+                            text = "Halo, ...",
+                            color = Color.White,
+                            fontSize = 32.sp
+                        )
+                    }
+                }
+                is Resource.Loading -> {
+                    item {
+                        Text(
+                            modifier = Modifier.placeholder(
+                                visible = true,
+                                color = Color.LightGray,
+                                shape = RoundedCornerShape(8.dp),
+                                highlight = PlaceholderHighlight.shimmer(highlightColor = Color.White)
+                            ), text = "Halo, Fahmi", color = Color.White, fontSize = 32.sp
+                        )
+                    }
+                }
+                is Resource.Success -> {
+                    item {
+                        Text(
+                            modifier = Modifier,
+                            text = "Halo, ${userInfo.value?.data?.name}",
+                            color = Color.White,
+                            fontSize = 32.sp
+                        )
+                    }
+                }
+                null -> {}
             }
         }
     }
@@ -196,80 +241,82 @@ private fun HomeScreenContentMap(
         viewModel.getNearestBengkel(112.609, -7.959)
     }
     polyline.setPoints(viewModel.polylinesGeopoint)
-    if (viewModel.showLocationPermissionDeniedRationale.value) {
-        AlertDialog(
-            onDismissRequest = { /*TODO*/ },
-            buttons = {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "Pastikan anda telah mengizinkan akses lokasi pada aplikasi De Montir",
-                        textAlign = TextAlign.Center
-                    )
-                    AppButtonField(
-                        onClick = { locationPermission.launchPermissionRequest() }
+    if(!mainViewModel.showPrototypeAlertDialog){
+        if (viewModel.showLocationPermissionDeniedRationale.value) {
+            AlertDialog(
+                onDismissRequest = { /*TODO*/ },
+                buttons = {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text(text = "Izinkan", color = Color.White)
+                        Text(
+                            text = "Pastikan anda telah mengizinkan akses lokasi pada aplikasi De Montir",
+                            textAlign = TextAlign.Center
+                        )
+                        AppButtonField(
+                            onClick = { locationPermission.launchPermissionRequest() }
+                        ) {
+                            Text(text = "Izinkan", color = Color.White)
+                        }
                     }
-                }
-            },
-            properties = DialogProperties(
-                dismissOnBackPress = false,
-                dismissOnClickOutside = false
+                },
+                properties = DialogProperties(
+                    dismissOnBackPress = false,
+                    dismissOnClickOutside = false
+                )
             )
-        )
-    }
-    if (viewModel.showLocationPermissionDeniedNotRationale.value) {
-        AlertDialog(
-            onDismissRequest = { /*TODO*/ },
-            buttons = {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "Sepertinya sengaja/tidak sengaja, anda telah menolak permintaan izin lokasi. " +
-                                "\nUntuk melanjutkan, anda harus mengizinkan akses lokasi secara manual di pengaturan",
-                        textAlign = TextAlign.Center
-                    )
-                    AppButtonField(
-                        onClick = {
-                            context.startActivity(appSettingIntent)
-                        }) {
-                        Text(text = "Buka Pengaturan", color = Color.White)
-                    }
-                }
-
-            },
-            properties = DialogProperties(
-                dismissOnBackPress = false,
-                dismissOnClickOutside = false
-            )
-        )
-    }
-    if (viewModel.showImageViewer.value) {
-        AppImageViewerDialog(
-            onDissmissRequest = { viewModel.showImageViewer.value = false },
-            url = viewModel.tmpUrlImageViewer.value
-        )
-    }
-    when (locationPermission.status) {
-        is PermissionStatus.Denied -> {
-            if (locationPermission.status.shouldShowRationale) {
-                viewModel.showLocationPermissionDeniedNotRationale.value = false
-                viewModel.showLocationPermissionDeniedRationale.value = true
-            } else {
-                viewModel.showLocationPermissionDeniedRationale.value = false
-                viewModel.showLocationPermissionDeniedNotRationale.value = true
-            }
         }
-        PermissionStatus.Granted -> {
-            viewModel.showLocationPermissionDeniedRationale.value = false
-            viewModel.showLocationPermissionDeniedNotRationale.value = false
+        if (viewModel.showLocationPermissionDeniedNotRationale.value) {
+            AlertDialog(
+                onDismissRequest = { /*TODO*/ },
+                buttons = {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "Sepertinya sengaja/tidak sengaja, anda telah menolak permintaan izin lokasi. " +
+                                    "\nUntuk melanjutkan, anda harus mengizinkan akses lokasi secara manual di pengaturan",
+                            textAlign = TextAlign.Center
+                        )
+                        AppButtonField(
+                            onClick = {
+                                context.startActivity(appSettingIntent)
+                            }) {
+                            Text(text = "Buka Pengaturan", color = Color.White)
+                        }
+                    }
+
+                },
+                properties = DialogProperties(
+                    dismissOnBackPress = false,
+                    dismissOnClickOutside = false
+                )
+            )
+        }
+        if (viewModel.showImageViewer.value) {
+            AppImageViewerDialog(
+                onDissmissRequest = { viewModel.showImageViewer.value = false },
+                url = viewModel.tmpUrlImageViewer.value
+            )
+        }
+        when (locationPermission.status) {
+            is PermissionStatus.Denied -> {
+                if (locationPermission.status.shouldShowRationale) {
+                    viewModel.showLocationPermissionDeniedNotRationale.value = false
+                    viewModel.showLocationPermissionDeniedRationale.value = true
+                } else {
+                    viewModel.showLocationPermissionDeniedRationale.value = false
+                    viewModel.showLocationPermissionDeniedNotRationale.value = true
+                }
+            }
+            PermissionStatus.Granted -> {
+                viewModel.showLocationPermissionDeniedRationale.value = false
+                viewModel.showLocationPermissionDeniedNotRationale.value = false
+            }
         }
     }
     when (nearestBengkel.value) {
@@ -529,3 +576,4 @@ private fun HomeScreenTopBar(viewModel: HomeViewModel) {
         }
     }
 }
+

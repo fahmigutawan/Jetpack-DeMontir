@@ -1,7 +1,9 @@
 package com.ionix.demontir.viewmodel
 
 import android.util.Log
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
@@ -22,6 +24,7 @@ class MainViewModel @Inject constructor(
     val isFirstTimeEnteringApp = mutableStateOf<Boolean?>(null)
     val searchState = mutableStateOf("")
     val showDashboardItem = mutableStateOf(true)
+    var showPrototypeAlertDialog by mutableStateOf(true)
 
     fun navigateWithDelay(
         delay: Long = 1000,

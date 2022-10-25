@@ -6,7 +6,6 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -18,7 +17,6 @@ import com.ionix.demontir.util.AppGoogleSignIn
 import com.ionix.demontir.util.GetResponse
 import com.ionix.demontir.util.Resource
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class FirebaseDataSource @Inject constructor(
@@ -51,6 +49,15 @@ class FirebaseDataSource @Inject constructor(
 
     // GET uid
     fun getCurrentUid(): String? = auth.currentUser?.uid
+
+    // GET user info by ID
+    fun getUserInfoById(uid: String): Flow<Resource<UserInfoResponse>?> =
+        getResponse.getFirestoreResponse {
+            firestoreDB
+                .collection("user")
+                .document(uid)
+                .get()
+        }
 
     // Get Bengkel by bengkel_id
     fun getBengkelByBengkelId(bengkel_id: String): Flow<Resource<BengkelResponse>?> =
@@ -102,6 +109,12 @@ class FirebaseDataSource @Inject constructor(
                 .whereLessThanOrEqualTo("bengkel_id", "$bengkel_id\uF7FF")
                 .limit(limit)
                 .get()
+        }
+
+    // GET orderdetail by order_id
+    fun getOrderDetailByOrderId(order_id: String): Flow<Resource<OrderResponse>?> =
+        getResponse.getFirestoreResponse {
+            firestoreDB.collection("order").document(order_id).get()
         }
 
     // Get Order Info LIST by UserId
@@ -167,13 +180,18 @@ class FirebaseDataSource @Inject constructor(
         }
 
     // Save user info on database
-    fun saveUserInfo(onSuccess: () -> Unit, onFailed: () -> Unit) {
+    fun saveUserInfo(
+        onSuccess: () -> Unit,
+        onFailed: () -> Unit,
+        profile_picture:String,
+        name:String
+    ) {
         val currUser = auth.currentUser
         val user = UserInfoRequest(
             uid = currUser?.uid ?: "",
-            name = currUser?.displayName ?: "",
+            name = currUser?.displayName ?: name,
             email = currUser?.email ?: "",
-            profile_picture = currUser?.photoUrl?.toString() ?: "",
+            profile_picture = currUser?.photoUrl?.toString() ?: profile_picture,
             user_long = "0",
             user_lat = "0"
         )
@@ -190,6 +208,7 @@ class FirebaseDataSource @Inject constructor(
         total_price: String,
         user_long: String,
         user_lat: String,
+        bengkel_id: String,
         onSuccess: (String) -> Unit,
         onFailed: () -> Unit,
         listOfProduct: List<OrderProductRequest>
@@ -210,6 +229,7 @@ class FirebaseDataSource @Inject constructor(
             order_status = 1,
             user_id = auth.uid ?: "",
             total_price = total_price,
+            bengkel_id = bengkel_id,
             user_lat = user_lat,
             user_long = user_long
         )
@@ -271,6 +291,8 @@ class FirebaseDataSource @Inject constructor(
     fun getAvailableChatChannel(
         possibleChannel1: String,
         possibleChannel2: String,
+        user_1: String,
+        user_2: String,
         onSuccess: (String) -> Unit,
         onFailed: () -> Unit
     ) {
@@ -293,7 +315,9 @@ class FirebaseDataSource @Inject constructor(
                         createNewChatChannel(
                             channel_id = possibleChannel1,
                             onSuccess = onSuccess,
-                            onFailed = onFailed
+                            onFailed = onFailed,
+                            user_1 = user_1,
+                            user_2 = user_2
                         )
                         return@addOnSuccessListener
                     }
@@ -306,15 +330,37 @@ class FirebaseDataSource @Inject constructor(
     // CREATE new chat channel
     fun createNewChatChannel(
         channel_id: String,
+        user_1: String,
+        user_2: String,
         onSuccess: (String) -> Unit,
         onFailed: () -> Unit
     ) {
         realtimeDB
             .child("chat")
             .child(channel_id)
-            .child("count")
-            .setValue(0)
-            .addOnSuccessListener { onSuccess(channel_id) }
+            .child("chat_data")
+            .setValue(
+                CreateNewChatRealtimeDbRequest(
+                    channel_id = channel_id,
+                    count = 0,
+                    user_1 = user_1,
+                    user_2 = user_2
+                )
+            )
+            .addOnSuccessListener {
+                firestoreDB
+                    .collection("chat_room")
+                    .document()
+                    .set(
+                        CreateNewChatDataFirestoreRequest(
+                            channel_id = channel_id,
+                            user_1 = user_1,
+                            user_2 = user_2
+                        )
+                    )
+                    .addOnSuccessListener { onSuccess(channel_id) }
+                    .addOnFailureListener { onFailed() }
+            }
             .addOnFailureListener { onFailed() }
     }
 
@@ -351,10 +397,11 @@ class FirebaseDataSource @Inject constructor(
         realtimeDB
             .child("chat")
             .child(channel_id)
+            .child("chat_data")
             .child("count")
             .get()
             .addOnSuccessListener {
-                val count = it.value as Int
+                val count = it.value as Long
                 val chatRoomRef = realtimeDB
                     .child("chat")
                     .child(channel_id)
@@ -376,6 +423,7 @@ class FirebaseDataSource @Inject constructor(
                         realtimeDB
                             .child("chat")
                             .child(channel_id)
+                            .child("chat_data")
                             .child("count")
                             .setValue(count + 1)
                             .addOnSuccessListener {
@@ -393,5 +441,25 @@ class FirebaseDataSource @Inject constructor(
                 onFailed()
             }
     }
+
+    // GET list of chat room uid1 from firestore
+    fun getListOfChatRoomUid1(uid:String): Flow<Resource<List<GetChatDataFromFirestoreResponse>>?> =
+        getResponse.getFirestoreListResponse {
+            firestoreDB
+                .collection("chat_room")
+                .whereGreaterThanOrEqualTo("user_1", uid)
+                .whereLessThanOrEqualTo("user_1", "$uid\uF7FF")
+                .get()
+        }
+
+    // GET list of chat room uid2 from firestore
+    fun getListOfChatRoomUid2(uid:String): Flow<Resource<List<GetChatDataFromFirestoreResponse>>?> =
+        getResponse.getFirestoreListResponse {
+            firestoreDB
+                .collection("chat_room")
+                .whereGreaterThanOrEqualTo("user_2", uid)
+                .whereLessThanOrEqualTo("user_2", "$uid\uF7FF")
+                .get()
+        }
 }
 

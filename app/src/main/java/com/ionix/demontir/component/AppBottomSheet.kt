@@ -36,6 +36,7 @@ import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
 import com.ionix.demontir.component.helper.DummyReviewItem
 import com.ionix.demontir.navigation.BranchNavigation
+import com.ionix.demontir.navigation.MainNavigation
 import com.ionix.demontir.ui.theme.BluePowder
 import com.ionix.demontir.ui.theme.BluePrussian
 import com.ionix.demontir.ui.theme.GreenCeleste
@@ -194,7 +195,7 @@ fun HomeBengkelBottomSheet(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         AppButtonField(
-                            onClick = { /*TODO*/ },
+                            onClick = { navController.navigate(route = "${MainNavigation.ChatScreen.name}/${homeViewModel.getCurrentUid()}/${bengkel.bengkel_id}") },
                             backgroundColor = Color.White,
                             rippleColor = Color.Black
                         ) {

@@ -93,13 +93,20 @@ fun LoginScreen(navController: NavController) {
                     viewModel.loginWithEmailPassword(
                         onSuccess = {
                             viewModel.isFirstTimeEnteringApp.value?.let { firstTime ->
-                                if (firstTime) {
-                                    // Navigate to Onboard
-                                    navController.navigate(route = MainNavigation.OnboardScreen.name)
-                                } else {
-                                    // Navigate to Home
-                                    navController.navigate(route = MainNavigation.HomeScreen.name)
-                                }
+                                viewModel.saveUserInfoToFirestore(
+                                    onSuccess = {
+                                        if (firstTime) {
+                                            // Navigate to Onboard
+                                            navController.navigate(route = MainNavigation.OnboardScreen.name)
+                                        } else {
+                                            // Navigate to Home
+                                            navController.navigate(route = MainNavigation.HomeScreen.name)
+                                        }
+                                    },
+                                    onFailed = {
+//                                      viewModel.showErrorSnackbar.value = true
+                                    }
+                                )
                             }
                         },
                         onFailed = {}

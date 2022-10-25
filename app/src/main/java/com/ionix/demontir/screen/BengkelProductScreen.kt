@@ -196,13 +196,19 @@ fun BengkelProductScreen(
                 else {
                     viewModel.createNewOrder(
                         total_price = listOfProduct.sumOf { it.sub_total_price.toLong() }
-                            .toString(), user_long = "0", user_lat = "0", onSuccess = { order_id ->
+                            .toString(),
+                        user_long = "0",
+                        user_lat = "0",
+                        bengkel_id = bengkel_id,
+                        onSuccess = { order_id ->
                             navController.navigate(
                                 route = "${MainNavigation.ChatScreen.name}/${viewModel.getCurrentUid() ?: ""}/$bengkel_id/$order_id"
                             )
-                        }, onFailed = {
+                        },
+                        onFailed = {
                             viewModel.showFailedOrderSnackbar.value = true
-                        }, listOfProduct = listOfProduct.toList()
+                        },
+                        listOfProduct = listOfProduct.toList()
                     )
                 }
             }

@@ -52,6 +52,7 @@ class BengkelProductViewModel @Inject constructor(
         total_price: String,
         user_long: String,
         user_lat: String,
+        bengkel_id: String,
         onSuccess: (String) -> Unit,
         onFailed: () -> Unit,
         listOfProduct: List<OrderProductRequest>
@@ -60,6 +61,7 @@ class BengkelProductViewModel @Inject constructor(
         total_price,
         user_long,
         user_lat,
+        bengkel_id,
         onSuccess,
         onFailed,
         listOfProduct

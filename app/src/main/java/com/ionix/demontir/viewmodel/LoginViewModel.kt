@@ -42,8 +42,14 @@ class LoginViewModel @Inject constructor(private val repository: AppRepository) 
         }
     }
 
-    fun saveUserInfoToFirestore(onSuccess: () -> Unit, onFailed: () -> Unit) =
-        repository.saveUserInfo(onSuccess, onFailed)
+    fun saveUserInfoToFirestore(
+        onSuccess: () -> Unit, onFailed: () -> Unit
+    ) = repository.saveUserInfo(
+        onSuccess,
+        onFailed,
+        "https://storage.needpix.com/rsynced_images/attribution-icon-2888829_1280.png",
+        emailState.value
+    )
 
     init {
         getFirstTimeEnteringAppState()

@@ -75,12 +75,44 @@ private fun AppNavigation(navController: NavHostController, modifier: Modifier =
         }
 
         composable(route = MainNavigation.ChatScreen.name) {
+            ChatScreen(navController = navController)
         }
 
-        composable(route = "${MainNavigation.ChatScreen.name}/{uid_1}/{uid_2}") {
+        composable(
+            route = "${MainNavigation.ChatScreen.name}/{uid_1}/{uid_2}",
+            arguments = listOf(
+                navArgument("uid_1") { type = NavType.StringType },
+                navArgument("uid_2") { type = NavType.StringType },
+            )
+        ) {
+            val uid1 = it.arguments?.getString("uid_1")
+            val uid2 = it.arguments?.getString("uid_2")
+
+            ChatDetailScreen(
+                uid_1 = uid1 ?: "",
+                uid_2 = uid2 ?: "",
+                navController = navController
+            )
         }
 
-        composable(route = "${MainNavigation.ChatScreen.name}/{uid_1}/{uid_2}/{order_id}") {
+        composable(
+            route = "${MainNavigation.ChatScreen.name}/{uid_1}/{uid_2}/{order_id}",
+            arguments = listOf(
+                navArgument("uid_1") { type = NavType.StringType },
+                navArgument("uid_2") { type = NavType.StringType },
+                navArgument("order_id") { type = NavType.StringType }
+            )
+        ) {
+            val uid1 = it.arguments?.getString("uid_1")
+            val uid2 = it.arguments?.getString("uid_2")
+            val order_id = it.arguments?.getString("order_id")
+
+            ChatDetailScreen(
+                uid_1 = uid1 ?: "",
+                uid_2 = uid2 ?: "",
+                navController = navController,
+                order_id = order_id ?: ""
+            )
         }
 
         composable(route = MainNavigation.HistoryScreen.name) {

@@ -9,6 +9,7 @@ import com.ionix.demontir.data.repository.AppRepository
 import com.ionix.demontir.model.api.response.BengkelPicturesResponse
 import com.ionix.demontir.model.api.response.BengkelProductResponse
 import com.ionix.demontir.model.api.response.BengkelResponse
+import com.ionix.demontir.model.api.response.UserInfoResponse
 import com.ionix.demontir.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -47,6 +48,9 @@ class HomeViewModel @Inject constructor(
         MutableStateFlow<Resource<List<BengkelProductResponse>>>(Resource.Loading())
     val bengkelProducts get() = _bengkelProducts
 
+    private val _userInfo = MutableStateFlow<Resource<UserInfoResponse>?>(Resource.Loading())
+    val userInfo get() = _userInfo
+
     fun getNearestBengkel(longitude: Double, latitude: Double) {
         viewModelScope.launch {
             repository.getNearestBengkelByLonglat(longitude, latitude).collect {
@@ -65,13 +69,25 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun getBengkelProductsByBengkelId(bengkel_id:String){
+    fun getBengkelProductsByBengkelId(bengkel_id: String) {
         viewModelScope.launch {
-            repository.getBengkelProductsByBengkelId(bengkel_id = bengkel_id, limit = 10).collect{
+            repository.getBengkelProductsByBengkelId(bengkel_id = bengkel_id, limit = 10).collect {
                 it?.let {
                     _bengkelProducts.value = it
                 }
             }
         }
+    }
+
+    fun getUserInfoByUid() = viewModelScope.launch {
+        repository.getUserInfoById(uid = getCurrentUid()).collect {
+            _userInfo.value = it
+        }
+    }
+
+    fun getCurrentUid() = repository.getCurrentUid() ?: ""
+
+    init {
+        getUserInfoByUid()
     }
 }
