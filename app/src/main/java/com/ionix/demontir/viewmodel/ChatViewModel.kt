@@ -92,6 +92,9 @@ class ChatViewModel @Inject constructor(
         }
     }
 
+    fun getChatCountByChannelId(channel_id:String, onSuccess: (Int) -> Unit, onFailed: () -> Unit) =
+        repository.getChatCountByChannelId(channel_id, onSuccess, onFailed)
+
     init {
         getListOfChat(getCurrentUid() ?: "")
     }

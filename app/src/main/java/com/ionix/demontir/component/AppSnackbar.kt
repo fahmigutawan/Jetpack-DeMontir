@@ -23,7 +23,7 @@ fun AppSnackbar(
     hostState: SnackbarHostState,
     actionOnNewLine: Boolean = false,
     shape: Shape = RoundedCornerShape(8.dp),
-    backgroundColor: Color = BluePowder,
+    backgroundColor: Color = Color.White,
     elevation: Dp = 4.dp
 ) {
     SnackbarHost(hostState = hostState) {

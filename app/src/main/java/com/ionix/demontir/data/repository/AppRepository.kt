@@ -177,4 +177,14 @@ class AppRepository @Inject constructor(
 
     // GET list of chat room from uid2 firestore
     fun getListOfChatRoomUid2(uid:String) = firebaseDataSource.getListOfChatRoomUid2(uid)
+
+    // GET chat count by channel_id
+    fun getChatCountByChannelId(
+        channel_id:String,
+        onSuccess: (Int) -> Unit,
+        onFailed: () -> Unit
+    ) = firebaseDataSource.getChatCountByChannelId(channel_id, onSuccess, onFailed)
+
+    // GET Order list by user_id
+    fun getOrderListByUserId(user_id:String) = firebaseDataSource.getOrdersByUserId(user_id)
 }

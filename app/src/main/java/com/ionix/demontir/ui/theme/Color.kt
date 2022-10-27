@@ -20,3 +20,4 @@ val BluePowder = Color(0xFF9ED8DB)
 val BlueCyanLight = Color(0xFFE9FFF9)
 
 val RedVermillon = Color(0xFFD64045)
+val VeryLightGray = Color(0xFFDDDDDD)

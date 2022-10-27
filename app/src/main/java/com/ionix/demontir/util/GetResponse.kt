@@ -21,7 +21,7 @@ class GetResponse @Inject constructor(
         crossinline block: suspend () -> Task<DocumentSnapshot>
     ): Flow<Resource<Y>?> = flow {
         emit(Resource.Loading())
-        delay(2500)
+//        delay(2500)
         if (!connectivityCheck.isConnectedToInternet()) {
             emit(Resource.Error("Check your Connection"))
             return@flow
@@ -41,7 +41,7 @@ class GetResponse @Inject constructor(
         crossinline block: suspend () -> Task<QuerySnapshot>
     ): Flow<Resource<List<Y>>?> = flow {
         emit(Resource.Loading())
-        delay(2500)
+//        delay(2500)
         if (!connectivityCheck.isConnectedToInternet()) {
             emit(Resource.Error("Check your Connection"))
             return@flow

@@ -69,14 +69,22 @@ fun LoginScreen(navController: NavController) {
                     onSuccess = {
                         if (firstTime) {
                             // Navigate to Onboard
-                            navController.navigate(route = MainNavigation.OnboardScreen.name)
+                            navController.navigate(route = MainNavigation.OnboardScreen.name){
+                                popUpTo(route = MainNavigation.LoginScreen.name){
+                                    inclusive = true
+                                }
+                            }
                         } else {
                             // Navigate to Home
-                            navController.navigate(route = MainNavigation.HomeScreen.name)
+                            navController.navigate(route = MainNavigation.HomeScreen.name){
+                                popUpTo(route = MainNavigation.LoginScreen.name){
+                                    inclusive = true
+                                }
+                            }
                         }
                     },
                     onFailed = {
-//                        viewModel.showErrorSnackbar.value = true
+                        viewModel.showErrorSnackbar.value = true
                     }
                 )
             }
@@ -291,7 +299,7 @@ private fun LoginContentField(
             horizontalArrangement = Arrangement.Center
         ) {
             Icon(
-                modifier = Modifier.size(42.dp),
+                modifier = Modifier.size(24.dp),
                 painter = painterResource(id = R.drawable.ic_google),
                 contentDescription = "Google",
                 tint = Color.Unspecified

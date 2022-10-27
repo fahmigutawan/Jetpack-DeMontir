@@ -35,6 +35,7 @@ class HomeViewModel @Inject constructor(
     val showLocationPermissionDeniedNotRationale = mutableStateOf(false)
     val tmpUrlImageViewer = mutableStateOf("")
     val showImageViewer = mutableStateOf(false)
+    val showCouldntChatYourself = mutableStateOf(false)
 
     private val _nearestBengkel =
         MutableStateFlow<Resource<List<BengkelResponse>>>(Resource.Loading())

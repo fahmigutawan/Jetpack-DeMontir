@@ -46,6 +46,7 @@ import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
 import com.ionix.demontir.R
 import com.ionix.demontir.component.*
+import com.ionix.demontir.snackbarListener
 import com.ionix.demontir.ui.theme.BluePrussian
 import com.ionix.demontir.ui.theme.BlueQueen
 import com.ionix.demontir.util.ListenAppBackHandler
@@ -94,6 +95,7 @@ fun HomeScreen(navController: NavController, mainViewModel: MainViewModel) {
             viewModel.resetBottomSheetCondition.value = true
         }
     }
+    snackbarListener("Tidak bisa chat diri sendiri", viewModel.showCouldntChatYourself)
 
     /**Content*/
     AnimatedVisibility(

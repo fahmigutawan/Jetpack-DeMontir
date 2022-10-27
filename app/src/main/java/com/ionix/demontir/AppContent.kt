@@ -116,6 +116,7 @@ private fun AppNavigation(navController: NavHostController, modifier: Modifier =
         }
 
         composable(route = MainNavigation.HistoryScreen.name) {
+            OrderHistoryScreen(navController = navController)
         }
 
         composable(route = MainNavigation.ProfileScreen.name) {

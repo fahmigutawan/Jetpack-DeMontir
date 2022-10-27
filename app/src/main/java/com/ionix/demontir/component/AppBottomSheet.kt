@@ -195,7 +195,11 @@ fun HomeBengkelBottomSheet(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         AppButtonField(
-                            onClick = { navController.navigate(route = "${MainNavigation.ChatScreen.name}/${homeViewModel.getCurrentUid()}/${bengkel.bengkel_id}") },
+                            onClick = {
+                                if (!homeViewModel.getCurrentUid().equals(bengkel.bengkel_id!!)) {
+                                    navController.navigate(route = "${MainNavigation.ChatScreen.name}/${homeViewModel.getCurrentUid()}/${bengkel.bengkel_id}")
+                                }else homeViewModel.showCouldntChatYourself.value = true
+                            },
                             backgroundColor = Color.White,
                             rippleColor = Color.Black
                         ) {

@@ -71,73 +71,58 @@ private fun ChatContent(
                 listOfChat.let {
                     items(it) { item ->
                         viewModel.getCurrentUid()?.let { myUid ->
-                            if ((item.user_1 ?: "").equals(myUid)) {
-                                val otherUid = item.user_2
-                                val userInfo = remember { mutableStateOf<UserInfoResponse?>(null) }
-                                viewModel.getUserInfoByUid(
-                                    uid = otherUid ?: "",
-                                    onSuccess = {
-                                        userInfo.value = it
-                                    }, onFailed = {
-                                        /*TODO*/
-                                    }
-                                )
+                            val userInfo = remember { mutableStateOf<UserInfoResponse?>(null) }
+                            var otherUid by remember { mutableStateOf("") }
 
-                                userInfo.value?.let {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clickable {
-                                                navController.navigate(
-                                                    route = "${MainNavigation.ChatScreen.name}/${viewModel.getCurrentUid() ?: ""}/${otherUid ?: ""}"
-                                                )
-                                            }
-                                    ) {
-                                        AsyncImage(
-                                            modifier = Modifier.size(54.dp),
-                                            contentScale = ContentScale.Crop,
-                                            model = it.profile_picture ?: "",
-                                            contentDescription = "Image"
-                                        )
-
-                                        Text(text = it.name ?: "Loading")
+                            viewModel.getChatCountByChannelId(
+                                item.channel_id!!,
+                                onSuccess = { count ->
+                                    if (count > 0) {
+                                        if ((item.user_1 ?: "").equals(myUid)) {
+                                            otherUid = item.user_2!!
+                                            viewModel.getUserInfoByUid(
+                                                uid = otherUid ?: "",
+                                                onSuccess = {
+                                                    userInfo.value = it
+                                                },
+                                                onFailed = {
+                                                    /*TODO*/
+                                                }
+                                            )
+                                        } else {
+                                            otherUid = item.user_1!!
+                                            viewModel.getUserInfoByUid(
+                                                uid = otherUid ?: "",
+                                                onSuccess = {
+                                                    userInfo.value = it
+                                                }, onFailed = {
+                                                    /*TODO*/
+                                                }
+                                            )
+                                        }
                                     }
-                                }
-                            } else {
-                                val otherUid = item.user_1
-                                val userInfo = remember { mutableStateOf<UserInfoResponse?>(null) }
-                                viewModel.getUserInfoByUid(
-                                    uid = otherUid ?: "",
-                                    onSuccess = {
-                                        userInfo.value = it
-                                    }, onFailed = {
-                                        /*TODO*/
-                                    }
-                                )
+                                },
+                                onFailed = { /*TODO*/ })
+                            userInfo.value?.let {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            navController.navigate(
+                                                route = "${MainNavigation.ChatScreen.name}/${viewModel.getCurrentUid() ?: ""}/${otherUid ?: ""}"
+                                            )
+                                        }
+                                ) {
+                                    AsyncImage(
+                                        modifier = Modifier.size(42.dp).clip(CircleShape),
+                                        contentScale = ContentScale.Crop,
+                                        model = it.profile_picture ?: "",
+                                        contentDescription = "Image"
+                                    )
 
-                                userInfo.value?.let {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clickable {
-                                                navController.navigate(
-                                                    route = "${MainNavigation.ChatScreen.name}/${viewModel.getCurrentUid() ?: ""}/${otherUid ?: ""}"
-                                                )
-                                            }
-                                    ) {
-                                        AsyncImage(
-                                            modifier = Modifier.size(54.dp),
-                                            contentScale = ContentScale.Crop,
-                                            model = it.profile_picture ?: "",
-                                            contentDescription = "Image"
-                                        )
-
-                                        Text(text = it.name ?: "Loading")
-                                    }
+                                    Text(text = it.name ?: "Loading")
                                 }
                             }
                         }

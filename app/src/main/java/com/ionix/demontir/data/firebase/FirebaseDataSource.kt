@@ -322,7 +322,8 @@ class FirebaseDataSource @Inject constructor(
                         return@addOnSuccessListener
                     }
                 }
-            }.addOnFailureListener {
+            }
+            .addOnFailureListener {
                 onFailed()
             }
     }
@@ -461,5 +462,25 @@ class FirebaseDataSource @Inject constructor(
                 .whereLessThanOrEqualTo("user_2", "$uid\uF7FF")
                 .get()
         }
+
+    // GET chat count by channel_id
+    fun getChatCountByChannelId(
+        channel_id:String,
+        onSuccess: (Int) -> Unit,
+        onFailed: () -> Unit
+    ){
+        realtimeDB
+            .child("chat")
+            .child(channel_id)
+            .child("chat_data")
+            .child("count")
+            .get()
+            .addOnSuccessListener {
+                onSuccess(Integer.parseInt(it.value.toString()))
+            }
+            .addOnFailureListener {
+                onFailed()
+            }
+    }
 }
 

@@ -71,11 +71,11 @@ fun OnboardScreen(navController: NavController) {
                         if (viewModel.pageState.value < 2) viewModel.pageState.value++
                         else {
                             viewModel.saveIsFirstTimeEnteringApp()
-                            mainViewModel.navigateWithDelay(
-                                navController = navController,
-                                route = MainNavigation.HomeScreen.name,
-                                inclusive = true
-                            )
+                            navController.navigate(route = MainNavigation.HomeScreen.name){
+                                popUpTo(route = MainNavigation.OnboardScreen.name){
+                                    inclusive = true
+                                }
+                            }
                         }
                     }
                 ) {
@@ -122,12 +122,11 @@ private fun OnboardScreenContent(
                         .clickable(interactionSource = remember { MutableInteractionSource() },
                             indication = rememberRipple(color = Color.Black),
                             onClick = {
-                                mainViewModel.navigateWithDelay(
-                                    navController = navController,
-                                    route = MainNavigation.HomeScreen.name,
-                                    inclusive = true
-                                ).also {
-                                    viewModel.saveIsFirstTimeEnteringApp()
+                                viewModel.saveIsFirstTimeEnteringApp()
+                                navController.navigate(route = MainNavigation.HomeScreen.name){
+                                    popUpTo(route = MainNavigation.OnboardScreen.name){
+                                        inclusive = true
+                                    }
                                 }
                             }
                         ),

@@ -75,7 +75,7 @@ fun BengkelProductScreen(
         viewModel.showCouldntOrderToSameUid
     )
     snackbarListener(
-        "Tidak bisa melakukan chat dengan bengkel sendiri",
+        "Tidak chat dengan diri sendiri",
         viewModel.showCouldntChatToSameUid
     )
     if (viewModel.showCustomOrderDialog) {
